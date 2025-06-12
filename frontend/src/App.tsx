@@ -4,6 +4,7 @@ import ResumeUploader from './components/ResumeUploader';
 import ResumeResult from './components/ResumeResult';
 import { ResumeAnalysis, ApiResponse } from './types';
 import axios from 'axios';
+import { API_ENDPOINTS } from './config/api';
 
 const theme = createTheme({
   palette: {
@@ -33,7 +34,7 @@ function App() {
         const formData = new FormData();
         formData.append('file', file);
         response = await axios.post<ApiResponse<ResumeAnalysis>>(
-          'http://localhost:8081/api/resume/upload',
+          API_ENDPOINTS.UPLOAD,
           formData,
           {
             headers: {
@@ -44,7 +45,7 @@ function App() {
       } else if (text) {
         console.log('Analyzing text...', { textLength: text.length });
         response = await axios.post<ApiResponse<ResumeAnalysis>>(
-          'http://localhost:8081/api/resume/analyze',
+          API_ENDPOINTS.ANALYZE,
           { content: text }
         );
       }
