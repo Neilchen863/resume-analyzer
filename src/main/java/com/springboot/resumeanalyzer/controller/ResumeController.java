@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpHeaders;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -20,10 +22,6 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/resume")
-@CrossOrigin(origins = {"https://resume-analyzer-alpha-mauve.vercel.app"}, 
-             methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS},
-             allowedHeaders = "*",
-             allowCredentials = "true")
 public class ResumeController {
     private static final Logger logger = LoggerFactory.getLogger(ResumeController.class);
 
@@ -31,35 +29,41 @@ public class ResumeController {
     private ResumeAnalyzerService analyzerService;
 
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ApiResponse<ResumeAnalysis> uploadResume(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<ApiResponse<ResumeAnalysis>> uploadResume(@RequestParam("file") MultipartFile file) {
         logger.info("Received file upload request: filename={}, size={} bytes, contentType={}", 
                    file.getOriginalFilename(), file.getSize(), file.getContentType());
         
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Access-Control-Allow-Origin", "*");
+        headers.add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+        headers.add("Access-Control-Allow-Headers", "*");
+        headers.add("Access-Control-Max-Age", "3600");
+        
         if (file == null || file.isEmpty()) {
             logger.warn("Received empty file");
-            return ApiResponse.error("Please select a file");
+            return ResponseEntity.ok().headers(headers).body(ApiResponse.error("Please select a file"));
         }
 
         if (!file.getContentType().equals("application/pdf")) {
             logger.warn("Invalid file type: {}", file.getContentType());
-            return ApiResponse.error("Only PDF files are supported");
+            return ResponseEntity.ok().headers(headers).body(ApiResponse.error("Only PDF files are supported"));
         }
         
         try {
             ResumeAnalysis analysis = analyzerService.analyzePdfResume(file);
             logger.info("Successfully analyzed resume from file: {}", file.getOriginalFilename());
-            return ApiResponse.success(analysis);
+            return ResponseEntity.ok().headers(headers).body(ApiResponse.success(analysis));
         } catch (IllegalArgumentException e) {
             logger.warn("Invalid file upload: {}", e.getMessage());
-            return ApiResponse.error(e.getMessage());
+            return ResponseEntity.ok().headers(headers).body(ApiResponse.error(e.getMessage()));
         } catch (IOException e) {
             logger.error("Failed to process PDF file: {}", e.getMessage(), e);
-            return ApiResponse.error("Failed to process PDF file: " + e.getMessage());
+            return ResponseEntity.ok().headers(headers).body(ApiResponse.error("Failed to process PDF file: " + e.getMessage()));
         } catch (Exception e) {
             logger.error("Unexpected error during file analysis", e);
             Throwable rootCause = getRootCause(e);
             String errorMessage = rootCause != null ? rootCause.getMessage() : e.getMessage();
-            return ApiResponse.error("Error analyzing resume: " + errorMessage);
+            return ResponseEntity.ok().headers(headers).body(ApiResponse.error("Error analyzing resume: " + errorMessage));
         }
     }
 
@@ -72,11 +76,17 @@ public class ResumeController {
     }
 
     @PostMapping("/analyze")
-    public ApiResponse<ResumeAnalysis> analyzeText(@RequestBody Map<String, String> request) {
+    public ResponseEntity<ApiResponse<ResumeAnalysis>> analyzeText(@RequestBody Map<String, String> request) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Access-Control-Allow-Origin", "*");
+        headers.add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+        headers.add("Access-Control-Allow-Headers", "*");
+        headers.add("Access-Control-Max-Age", "3600");
+
         String content = request.get("content");
         if (content == null || content.trim().isEmpty()) {
             logger.warn("Received empty content for analysis");
-            return ApiResponse.error("Content cannot be empty");
+            return ResponseEntity.ok().headers(headers).body(ApiResponse.error("Content cannot be empty"));
         }
         
         logger.info("Received text analysis request with {} characters", content.length());
@@ -84,16 +94,21 @@ public class ResumeController {
         try {
             ResumeAnalysis analysis = analyzerService.analyzeResume(content);
             logger.info("Successfully analyzed resume text");
-            return ApiResponse.success(analysis);
+            return ResponseEntity.ok().headers(headers).body(ApiResponse.success(analysis));
         } catch (Exception e) {
             logger.error("Failed to analyze resume text: {}", e.getMessage(), e);
-            return ApiResponse.error("Failed to analyze resume: " + e.getMessage());
+            return ResponseEntity.ok().headers(headers).body(ApiResponse.error("Failed to analyze resume: " + e.getMessage()));
         }
     }
 
-    // Add a test endpoint that returns a sample analysis
     @GetMapping("/sample")
-    public ApiResponse<ResumeAnalysis> getSampleAnalysis() {
+    public ResponseEntity<ApiResponse<ResumeAnalysis>> getSampleAnalysis() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Access-Control-Allow-Origin", "*");
+        headers.add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+        headers.add("Access-Control-Allow-Headers", "*");
+        headers.add("Access-Control-Max-Age", "3600");
+
         try {
             ResumeAnalysis analysis = new ResumeAnalysis();
             
@@ -129,15 +144,32 @@ public class ResumeController {
             
             analysis.setTags(tags);
             
-            return ApiResponse.success(analysis);
+            return ResponseEntity.ok().headers(headers).body(ApiResponse.success(analysis));
         } catch (Exception e) {
             logger.error("Failed to generate sample analysis: {}", e.getMessage(), e);
-            return ApiResponse.error("Failed to generate sample analysis");
+            return ResponseEntity.ok().headers(headers).body(ApiResponse.error("Failed to generate sample analysis"));
         }
     }
 
     @GetMapping("/test")
-    public ApiResponse<String> test() {
-        return ApiResponse.success("API is working!");
+    public ResponseEntity<ApiResponse<String>> test() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Access-Control-Allow-Origin", "*");
+        headers.add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+        headers.add("Access-Control-Allow-Headers", "*");
+        headers.add("Access-Control-Max-Age", "3600");
+
+        return ResponseEntity.ok().headers(headers).body(ApiResponse.success("API is working!"));
+    }
+
+    @RequestMapping(value = "/**", method = RequestMethod.OPTIONS)
+    public ResponseEntity<?> handleOptions() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Access-Control-Allow-Origin", "*");
+        headers.add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+        headers.add("Access-Control-Allow-Headers", "*");
+        headers.add("Access-Control-Max-Age", "3600");
+        
+        return ResponseEntity.ok().headers(headers).build();
     }
 } 
