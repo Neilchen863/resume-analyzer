@@ -1,5 +1,17 @@
 import React from 'react';
-import { Box, Card, Chip, Typography, Avatar, Button } from '@mui/material';
+import { 
+    Box, 
+    Card, 
+    Chip, 
+    Typography, 
+    Avatar, 
+    Button, 
+    Paper,
+    Divider,
+    Container,
+    Grid,
+    useTheme
+} from '@mui/material';
 import { ResumeAnalysis, ResumeTag } from '../types';
 import WorkIcon from '@mui/icons-material/Work';
 import SchoolIcon from '@mui/icons-material/School';
@@ -7,6 +19,9 @@ import EmojiObjectsIcon from '@mui/icons-material/EmojiObjects';
 import LocalLibraryIcon from '@mui/icons-material/LocalLibrary';
 import FormatQuoteIcon from '@mui/icons-material/FormatQuote';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
+import EmailIcon from '@mui/icons-material/Email';
+import PhoneIcon from '@mui/icons-material/Phone';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
 import { SvgIconComponent } from '@mui/icons-material';
 
 interface ResumeResultProps {
@@ -62,7 +77,7 @@ const getTagTypeName = (type: ResumeTag['type']): string => {
         case 'INTEREST':
             return '兴趣爱好';
         case 'MOTTO':
-            return '个性签名';
+            return '个性标签';
         default:
             return type;
     }
@@ -70,26 +85,42 @@ const getTagTypeName = (type: ResumeTag['type']): string => {
 
 const ResumeResult: React.FC<ResumeResultProps> = ({ analysis, onReset }) => {
     console.log('ResumeResult rendering with analysis:', analysis);
+    const theme = useTheme();
     
     const { personalInfo, tags } = analysis;
     
     if (!personalInfo || !tags) {
         console.error('Invalid analysis data:', analysis);
         return (
-            <Box sx={{ maxWidth: 800, mx: 'auto', mt: 4, mb: 4 }}>
-                <Typography color="error">
-                    分析结果数据不完整，请重试
-                </Typography>
-                <Button
-                    variant="outlined"
-                    startIcon={<RestartAltIcon />}
-                    onClick={onReset}
-                    fullWidth
-                    sx={{ mt: 2 }}
+            <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
+                <Paper 
+                    elevation={3} 
+                    sx={{ 
+                        p: 4, 
+                        textAlign: 'center',
+                        backgroundColor: theme.palette.error.light,
+                        color: theme.palette.error.contrastText
+                    }}
                 >
-                    重新分析
-                </Button>
-            </Box>
+                    <Typography variant="h6" gutterBottom>
+                        分析结果数据不完整，请重试
+                    </Typography>
+                    <Button
+                        variant="contained"
+                        startIcon={<RestartAltIcon />}
+                        onClick={onReset}
+                        sx={{ 
+                            mt: 2,
+                            backgroundColor: theme.palette.error.dark,
+                            '&:hover': {
+                                backgroundColor: theme.palette.error.main,
+                            }
+                        }}
+                    >
+                        重新分析
+                    </Button>
+                </Paper>
+            </Container>
         );
     }
 
@@ -97,82 +128,146 @@ const ResumeResult: React.FC<ResumeResultProps> = ({ analysis, onReset }) => {
     console.log('Processing tags:', tags);
 
     return (
-        <Box sx={{ maxWidth: 800, mx: 'auto', mt: 4, mb: 4 }}>
-            <Card sx={{ p: 4, mb: 4 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-                    <Avatar
-                        sx={{ 
-                            width: 80, 
-                            height: 80, 
-                            mr: 3, 
-                            bgcolor: 'primary.main',
-                            fontSize: '2rem'
-                        }}
-                    >
-                        {personalInfo.name?.[0] || '?'}
-                    </Avatar>
-                    <Box>
-                        <Typography variant="h4" gutterBottom>
-                            {personalInfo.name || '未知姓名'}
-                        </Typography>
-                        {personalInfo.email && (
-                            <Typography color="textSecondary" gutterBottom>
-                                {personalInfo.email}
+        <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
+            <Paper elevation={3} sx={{ overflow: 'hidden' }}>
+                {/* Header Section with Gradient Background */}
+                <Box
+                    sx={{
+                        background: `linear-gradient(45deg, ${theme.palette.primary.main} 30%, ${theme.palette.secondary.main} 90%)`,
+                        color: 'white',
+                        p: 4,
+                    }}
+                >
+                    <Grid container spacing={3} alignItems="center">
+                        <Grid item>
+                            <Avatar
+                                sx={{
+                                    width: 100,
+                                    height: 100,
+                                    fontSize: '2.5rem',
+                                    bgcolor: 'rgba(255, 255, 255, 0.2)',
+                                    border: '4px solid rgba(255, 255, 255, 0.5)',
+                                }}
+                            >
+                                {personalInfo.name?.[0] || '?'}
+                            </Avatar>
+                        </Grid>
+                        <Grid item xs>
+                            <Typography variant="h3" gutterBottom sx={{ fontWeight: 'bold' }}>
+                                {personalInfo.name || '未知姓名'}
                             </Typography>
-                        )}
-                        {personalInfo.phone && (
-                            <Typography color="textSecondary" gutterBottom>
-                                {personalInfo.phone}
-                            </Typography>
-                        )}
-                        {personalInfo.location && (
-                            <Typography color="textSecondary">
-                                {personalInfo.location}
-                            </Typography>
-                        )}
-                    </Box>
+                            <Grid container spacing={2}>
+                                {personalInfo.email && (
+                                    <Grid item>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                            <EmailIcon />
+                                            <Typography>{personalInfo.email}</Typography>
+                                        </Box>
+                                    </Grid>
+                                )}
+                                {personalInfo.phone && (
+                                    <Grid item>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                            <PhoneIcon />
+                                            <Typography>{personalInfo.phone}</Typography>
+                                        </Box>
+                                    </Grid>
+                                )}
+                                {personalInfo.location && (
+                                    <Grid item>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                            <LocationOnIcon />
+                                            <Typography>{personalInfo.location}</Typography>
+                                        </Box>
+                                    </Grid>
+                                )}
+                            </Grid>
+                        </Grid>
+                    </Grid>
                 </Box>
 
-                {tagTypes.map((type) => {
-                    const typeTags = tags.filter((tag) => tag.type === type);
-                    console.log(`Tags for type ${type}:`, typeTags);
-                    if (typeTags.length === 0) return null;
+                {/* Tags Section */}
+                <Box sx={{ p: 4 }}>
+                    {tagTypes.map((type, index) => {
+                        const typeTags = tags.filter((tag) => tag.type === type);
+                        if (typeTags.length === 0) return null;
 
-                    return (
-                        <Box key={type} sx={{ mb: 3 }}>
-                            <Typography variant="h6" gutterBottom>
-                                {getTagTypeName(type)}
-                            </Typography>
-                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                                {typeTags.map((tag) => (
-                                    <Chip
-                                        key={tag.id}
-                                        label={tag.name}
-                                        icon={getTagIcon(tag.type)}
-                                        color={getTagColor(tag.type)}
-                                        sx={{
-                                            m: 0.5,
-                                            '& .MuiChip-icon': {
-                                                color: 'inherit'
-                                            }
+                        return (
+                            <React.Fragment key={type}>
+                                {index > 0 && <Divider sx={{ my: 3 }} />}
+                                <Box sx={{ mb: 3 }}>
+                                    <Typography 
+                                        variant="h5" 
+                                        gutterBottom 
+                                        sx={{ 
+                                            display: 'flex', 
+                                            alignItems: 'center', 
+                                            gap: 1,
+                                            color: theme.palette[getTagColor(type)].main,
+                                            fontWeight: 'bold'
                                         }}
-                                    />
-                                ))}
-                            </Box>
-                        </Box>
-                    );
-                })}
-            </Card>
+                                    >
+                                        {getTagIcon(type)}
+                                        {getTagTypeName(type)}
+                                    </Typography>
+                                    <Box 
+                                        sx={{ 
+                                            display: 'flex', 
+                                            flexWrap: 'wrap', 
+                                            gap: 1,
+                                            mt: 2 
+                                        }}
+                                    >
+                                        {typeTags.map((tag) => (
+                                            <Chip
+                                                key={tag.id}
+                                                label={
+                                                    <Typography sx={{ p: 0.5 }}>
+                                                        {tag.name}
+                                                    </Typography>
+                                                }
+                                                color={getTagColor(tag.type)}
+                                                sx={{
+                                                    borderRadius: '16px',
+                                                    height: 'auto',
+                                                    '& .MuiChip-label': {
+                                                        display: 'block',
+                                                    },
+                                                    transition: 'all 0.2s ease-in-out',
+                                                    '&:hover': {
+                                                        transform: 'scale(1.05)',
+                                                        boxShadow: theme.shadows[3],
+                                                    },
+                                                }}
+                                            />
+                                        ))}
+                                    </Box>
+                                </Box>
+                            </React.Fragment>
+                        );
+                    })}
+                </Box>
+            </Paper>
 
             <Button
-                variant="outlined"
+                variant="contained"
                 startIcon={<RestartAltIcon />}
                 onClick={onReset}
                 fullWidth
+                sx={{ 
+                    mt: 3,
+                    height: 48,
+                    borderRadius: '24px',
+                    background: `linear-gradient(45deg, ${theme.palette.primary.main} 30%, ${theme.palette.secondary.main} 90%)`,
+                    transition: 'all 0.2s ease-in-out',
+                    '&:hover': {
+                        transform: 'scale(1.02)',
+                    }
+                }}
             >
                 分析新简历
             </Button>
-        </Box>
+        </Container>
     );
 };
 
