@@ -1,65 +1,187 @@
 # Resume Analyzer
 
-A Spring Boot application that analyzes resumes using OpenAI's GPT-4 API. This application can extract key information from resumes including personal information, skills, interests, suitable positions, professional fields, and personality tags.
+一个基于 AI 的简历分析工具，可以自动提取简历中的关键信息并进行智能分析。
 
-## Features
+## 功能特点
 
-- PDF resume parsing
-- Text resume analysis
-- Structured JSON output
-- Integration with OpenAI GPT-4
-- RESTful API endpoints
+- 支持 PDF 文件上传和文本输入
+- 自动提取个人信息（姓名、邮箱、电话、地址）
+- 识别专业技能和工具
+- 分析兴趣爱好
+- 推荐适合的职位
+- 识别专业领域
+- 生成个性标签
 
-## Tech Stack
+## 技术栈
 
+### 后端
+- Spring Boot 3.2.3
 - Java 17
-- Spring Boot
-- OpenAI API
-- PDFBox for PDF processing
-- Jackson for JSON processing
+- Apache PDFBox (PDF 文本提取)
+- DeepSeek AI API (文本分析)
 
-## Prerequisites
+### 前端
+- React
+- TypeScript
+- Material-UI (MUI)
+- Axios
 
-- Java 17 or higher
-- Maven
-- OpenAI API key
+## 快速开始
 
-## Setup
+### 环境要求
+- Java 17 或更高版本
+- Node.js 16 或更高版本
+- Maven 3.6 或更高版本
 
-1. Clone the repository:
+### 安装步骤
+
+1. 克隆项目
 ```bash
-git clone https://github.com/[your-username]/resume-analyzer.git
+git clone <repository-url>
 cd resume-analyzer
 ```
 
-2. Create `application.properties` in `src/main/resources/` and add your OpenAI API key:
+2. 配置环境变量
+```bash
+# Linux/macOS
+export DEEPSEEK_API_KEY=your-api-key
+
+# Windows
+set DEEPSEEK_API_KEY=your-api-key
+```
+
+3. 启动后端服务
+```bash
+./mvnw spring-boot:run
+```
+
+4. 启动前端服务
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+5. 访问应用
+打开浏览器访问 http://localhost:5173
+
+## 使用说明
+
+1. 上传简历
+   - 支持 PDF 格式
+   - 文件大小限制：10MB
+
+2. 或直接输入文本
+   - 将简历文本复制粘贴到文本框中
+   - 点击"分析文本内容"按钮
+
+3. 查看分析结果
+   - 个人基本信息
+   - 技能标签
+   - 兴趣爱好
+   - 职位推荐
+   - 专业领域
+   - 个性标签
+
+## API 文档
+
+### 1. 上传 PDF 文件
+```
+POST /api/resume/upload
+Content-Type: multipart/form-data
+
+参数：
+- file: PDF文件
+
+返回：
+{
+  "success": true,
+  "data": {
+    "personalInfo": {
+      "name": "姓名",
+      "email": "邮箱",
+      "phone": "电话",
+      "location": "地址"
+    },
+    "tags": [
+      {
+        "id": "uuid",
+        "name": "标签名称",
+        "type": "SKILL|INTEREST|POSITION|FIELD|MOTTO",
+        "confidence": 0.95
+      }
+    ]
+  }
+}
+```
+
+### 2. 分析文本内容
+```
+POST /api/resume/analyze
+Content-Type: application/json
+
+请求体：
+{
+  "content": "简历文本内容"
+}
+
+返回：
+与上传 PDF 接口相同
+```
+
+## 错误处理
+
+- 文件格式错误：仅支持 PDF 文件
+- 文件大小超限：最大支持 10MB
+- 文本为空：内容不能为空
+- API 错误：包含具体的错误信息
+
+## 配置说明
+
+### 后端配置 (application.properties)
 ```properties
-openai.api.key=your-api-key-here
+spring.application.name=resume-analyzer
+server.port=8081
+spring.servlet.multipart.max-file-size=10MB
+spring.servlet.multipart.max-request-size=10MB
 ```
 
-3. Build the project:
-```bash
-mvn clean install
-```
+### 前端配置
+- API 地址：默认为 `http://localhost:8081`
+- 开发服务器端口：5173
 
-4. Run the application:
-```bash
-mvn spring-boot:run
-```
+## 开发说明
 
-## Usage
+### 后端开发
+1. 代码结构
+   - `controller`: API 接口控制器
+   - `service`: 业务逻辑层
+   - `model`: 数据模型
+   - `config`: 配置类
 
-The application provides REST endpoints for analyzing resumes. You can send either PDF files or plain text content.
+2. 主要类说明
+   - `ResumeController`: 处理文件上传和文本分析请求
+   - `ResumeAnalyzerService`: 实现简历分析逻辑
+   - `ResumeAnalysis`: 分析结果数据模型
 
-### API Endpoints
+### 前端开发
+1. 代码结构
+   - `src/components`: React 组件
+   - `src/types`: TypeScript 类型定义
+   - `src/App.tsx`: 主应用组件
 
-- `POST /api/analyze/text` - Analyze resume text
-- `POST /api/analyze/pdf` - Analyze PDF resume
+2. 主要组件
+   - `ResumeUploader`: 文件上传和文本输入组件
+   - `ResumeResult`: 分析结果展示组件
 
-## Contributing
+## 贡献指南
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+1. Fork 项目
+2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 创建 Pull Request
 
-## License
+## 许可证
 
-This project is licensed under the MIT License - see the LICENSE file for details. 
+[MIT License](LICENSE) 
