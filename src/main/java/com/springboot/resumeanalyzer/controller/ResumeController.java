@@ -20,9 +20,10 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/resume")
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5173", "http://127.0.0.1:5173", "http://127.0.0.1:3000"}, 
-             methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.OPTIONS},
-             allowedHeaders = "*")
+@CrossOrigin(origins = {"https://resume-analyzer-alpha-mauve.vercel.app"}, 
+             methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS},
+             allowedHeaders = "*",
+             allowCredentials = "true")
 public class ResumeController {
     private static final Logger logger = LoggerFactory.getLogger(ResumeController.class);
 
