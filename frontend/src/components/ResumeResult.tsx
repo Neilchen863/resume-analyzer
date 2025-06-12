@@ -69,8 +69,32 @@ const getTagTypeName = (type: ResumeTag['type']): string => {
 };
 
 const ResumeResult: React.FC<ResumeResultProps> = ({ analysis, onReset }) => {
+    console.log('ResumeResult rendering with analysis:', analysis);
+    
     const { personalInfo, tags } = analysis;
+    
+    if (!personalInfo || !tags) {
+        console.error('Invalid analysis data:', analysis);
+        return (
+            <Box sx={{ maxWidth: 800, mx: 'auto', mt: 4, mb: 4 }}>
+                <Typography color="error">
+                    分析结果数据不完整，请重试
+                </Typography>
+                <Button
+                    variant="outlined"
+                    startIcon={<RestartAltIcon />}
+                    onClick={onReset}
+                    fullWidth
+                    sx={{ mt: 2 }}
+                >
+                    重新分析
+                </Button>
+            </Box>
+        );
+    }
+
     const tagTypes: ResumeTag['type'][] = ['MOTTO', 'POSITION', 'FIELD', 'SKILL', 'INTEREST'];
+    console.log('Processing tags:', tags);
 
     return (
         <Box sx={{ maxWidth: 800, mx: 'auto', mt: 4, mb: 4 }}>
@@ -111,6 +135,7 @@ const ResumeResult: React.FC<ResumeResultProps> = ({ analysis, onReset }) => {
 
                 {tagTypes.map((type) => {
                     const typeTags = tags.filter((tag) => tag.type === type);
+                    console.log(`Tags for type ${type}:`, typeTags);
                     if (typeTags.length === 0) return null;
 
                     return (

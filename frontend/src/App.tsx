@@ -29,10 +29,11 @@ function App() {
       let response;
 
       if (file) {
+        console.log('Uploading file...');
         const formData = new FormData();
         formData.append('file', file);
         response = await axios.post<ApiResponse<ResumeAnalysis>>(
-          'http://localhost:8080/api/resume/upload',
+          'http://localhost:8081/api/resume/upload',
           formData,
           {
             headers: {
@@ -41,20 +42,44 @@ function App() {
           }
         );
       } else if (text) {
+        console.log('Analyzing text...', { textLength: text.length });
         response = await axios.post<ApiResponse<ResumeAnalysis>>(
-          'http://localhost:8080/api/resume/analyze',
+          'http://localhost:8081/api/resume/analyze',
           { content: text }
         );
       }
 
+      console.log('Raw API Response:', response);
+      console.log('Response data:', JSON.stringify(response?.data, null, 2));
+      
       if (response?.data?.success) {
-        setAnalysis(response.data.data!);
+        console.log('Analysis successful:', response.data.data);
+        if (!response.data.data) {
+          console.error('Analysis data is null or undefined');
+          setError('分析结果为空，请重试');
+          return;
+        }
+        if (!response.data.data.personalInfo || !response.data.data.tags) {
+          console.error('Invalid analysis data structure:', response.data.data);
+          setError('分析结果格式不正确，请重试');
+          return;
+        }
+        setAnalysis(response.data.data);
       } else {
-        setError(response?.data?.error || '分析失败，请重试');
+        const errorMessage = response?.data?.error || '分析失败，请重试';
+        console.error('Analysis failed:', errorMessage);
+        console.error('Full error response:', response?.data);
+        setError(errorMessage);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error analyzing resume:', error);
-      setError('分析失败，请重试');
+      console.error('Error details:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+        stack: error.stack
+      });
+      setError(error.response?.data?.error || error.message || '分析失败，请重试');
     } finally {
       setLoading(false);
     }
