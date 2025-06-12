@@ -108,11 +108,16 @@ function App() {
         throw new Error('No file or text provided');
       }
       
-      if (!response.success) {
-        throw new Error(response.message || '分析失败');
+      if (!response.success || !response.data) {
+        throw new Error(response.error || '分析失败');
       }
       
-      setAnalysis(response.data);
+      const analysisData = response.data;
+      if (!analysisData.personalInfo || !analysisData.tags) {
+        throw new Error('分析结果数据不完整');
+      }
+      
+      setAnalysis(analysisData);
     } catch (err) {
       console.error('Upload error:', err);
       setError(err instanceof Error ? err.message : '分析过程中出现错误');
