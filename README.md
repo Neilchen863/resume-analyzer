@@ -65,6 +65,54 @@ npm run dev
 5. 访问应用
 打开浏览器访问 http://localhost:5173
 
+## 项目结构
+
+```
+resume-analyzer/
+├── frontend/                # 前端项目目录
+│   ├── src/
+│   │   ├── components/     # React 组件
+│   │   │   ├── ResumeUploader.tsx    # 文件上传组件
+│   │   │   └── ResumeResult.tsx      # 结果展示组件
+│   │   ├── types/         # TypeScript 类型定义
+│   │   └── App.tsx        # 主应用组件
+│   ├── public/            # 静态资源
+│   └── package.json       # 前端依赖配置
+│
+├── src/                    # 后端项目目录
+│   └── main/
+│       ├── java/          # Java 源代码
+│       │   └── com/resumeanalyzer/
+│       │       ├── controller/    # API 控制器
+│       │       ├── service/       # 业务逻辑
+│       │       ├── model/         # 数据模型
+│       │       └── config/        # 配置类
+│       └── resources/
+│           └── application.properties  # 应用配置
+│
+├── pom.xml                 # Maven 项目配置
+└── README.md              # 项目文档
+```
+
+### 主要功能模块
+
+1. 文件处理模块
+   - PDF 文件上传和解析
+   - 文本内容提取
+   - 文件格式验证
+
+2. AI 分析模块
+   - 个人信息提取
+   - 技能标签识别
+   - 职位匹配分析
+   - 兴趣爱好识别
+
+3. 结果展示模块
+   - 个人信息卡片
+   - 标签分类展示
+   - 评分系统
+   - 导出功能（JSON/PDF）
+
 ## 使用说明
 
 1. 上传简历
