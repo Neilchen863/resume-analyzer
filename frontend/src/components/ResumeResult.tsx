@@ -10,7 +10,10 @@ import {
     Divider,
     Container,
     Grid,
-    useTheme
+    useTheme,
+    Stack,
+    Rating,
+    Tooltip
 } from '@mui/material';
 import { ResumeAnalysis, ResumeTag } from '../types';
 import WorkIcon from '@mui/icons-material/Work';
@@ -22,6 +25,7 @@ import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import EmailIcon from '@mui/icons-material/Email';
 import PhoneIcon from '@mui/icons-material/Phone';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
+import DownloadIcon from '@mui/icons-material/Download';
 import { SvgIconComponent } from '@mui/icons-material';
 
 interface ResumeResultProps {
@@ -80,6 +84,82 @@ const getTagTypeName = (type: ResumeTag['type']): string => {
             return '个性标签';
         default:
             return type;
+    }
+};
+
+const exportToJson = (analysis: ResumeAnalysis) => {
+    const dataStr = JSON.stringify(analysis, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${analysis.personalInfo.name || 'resume'}_analysis.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+};
+
+const exportToPdf = async (analysis: ResumeAnalysis) => {
+    try {
+        const { jsPDF } = await import('jspdf');
+        const doc = new jsPDF();
+        
+        // Set font to support Chinese characters
+        doc.setFont('helvetica');
+        
+        // Add title
+        doc.setFontSize(20);
+        doc.text('简历分析报告', 20, 20);
+        
+        // Add personal info
+        doc.setFontSize(16);
+        doc.text('个人信息', 20, 40);
+        doc.setFontSize(12);
+        doc.text(`姓名: ${analysis.personalInfo.name || '未知'}`, 30, 50);
+        if (analysis.personalInfo.email) {
+            doc.text(`邮箱: ${analysis.personalInfo.email}`, 30, 60);
+        }
+        if (analysis.personalInfo.phone) {
+            doc.text(`电话: ${analysis.personalInfo.phone}`, 30, 70);
+        }
+        if (analysis.personalInfo.location) {
+            doc.text(`地点: ${analysis.personalInfo.location}`, 30, 80);
+        }
+        
+        // Add tags by type
+        let yPos = 100;
+        const tagTypes: ResumeTag['type'][] = ['MOTTO', 'POSITION', 'FIELD', 'SKILL', 'INTEREST'];
+        
+        for (const type of tagTypes) {
+            const typeTags = analysis.tags.filter(tag => tag.type === type);
+            if (typeTags.length === 0) continue;
+            
+            doc.setFontSize(16);
+            doc.text(getTagTypeName(type), 20, yPos);
+            yPos += 10;
+            
+            doc.setFontSize(12);
+            typeTags.forEach(tag => {
+                const tagText = tag.score ? `${tag.name} (${tag.score}/10)` : tag.name;
+                doc.text(`• ${tagText}`, 30, yPos);
+                yPos += 10;
+                
+                // Add new page if needed
+                if (yPos > 280) {
+                    doc.addPage();
+                    yPos = 20;
+                }
+            });
+            
+            yPos += 10;
+        }
+        
+        // Save the PDF
+        doc.save(`${analysis.personalInfo.name || 'resume'}_analysis.pdf`);
+    } catch (error) {
+        console.error('Error generating PDF:', error);
+        alert('PDF生成失败，请尝试导出JSON格式');
     }
 };
 
@@ -186,6 +266,24 @@ const ResumeResult: React.FC<ResumeResultProps> = ({ analysis, onReset }) => {
                     </Grid>
                 </Box>
 
+                {/* Export Buttons */}
+                <Box sx={{ p: 2, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+                    <Button
+                        variant="outlined"
+                        startIcon={<DownloadIcon />}
+                        onClick={() => exportToJson(analysis)}
+                    >
+                        导出JSON
+                    </Button>
+                    <Button
+                        variant="contained"
+                        startIcon={<DownloadIcon />}
+                        onClick={() => exportToPdf(analysis)}
+                    >
+                        导出PDF
+                    </Button>
+                </Box>
+
                 {/* Tags Section */}
                 <Box sx={{ p: 4 }}>
                     {tagTypes.map((type, index) => {
@@ -219,27 +317,46 @@ const ResumeResult: React.FC<ResumeResultProps> = ({ analysis, onReset }) => {
                                         }}
                                     >
                                         {typeTags.map((tag) => (
-                                            <Chip
+                                            <Tooltip 
                                                 key={tag.id}
-                                                label={
-                                                    <Typography sx={{ p: 0.5 }}>
-                                                        {tag.name}
-                                                    </Typography>
-                                                }
-                                                color={getTagColor(tag.type)}
-                                                sx={{
-                                                    borderRadius: '16px',
-                                                    height: 'auto',
-                                                    '& .MuiChip-label': {
-                                                        display: 'block',
-                                                    },
-                                                    transition: 'all 0.2s ease-in-out',
-                                                    '&:hover': {
-                                                        transform: 'scale(1.05)',
-                                                        boxShadow: theme.shadows[3],
-                                                    },
-                                                }}
-                                            />
+                                                title={tag.score ? `评分: ${tag.score}/10` : ''}
+                                                placement="top"
+                                            >
+                                                <Chip
+                                                    label={
+                                                        <Box sx={{ p: 0.5 }}>
+                                                            <Typography component="span">
+                                                                {tag.name}
+                                                            </Typography>
+                                                            {tag.score && (
+                                                                <Typography 
+                                                                    component="span" 
+                                                                    sx={{ 
+                                                                        ml: 1,
+                                                                        opacity: 0.8,
+                                                                        fontSize: '0.9em'
+                                                                    }}
+                                                                >
+                                                                    {tag.score}/10
+                                                                </Typography>
+                                                            )}
+                                                        </Box>
+                                                    }
+                                                    color={getTagColor(tag.type)}
+                                                    sx={{
+                                                        borderRadius: '16px',
+                                                        height: 'auto',
+                                                        '& .MuiChip-label': {
+                                                            display: 'block',
+                                                        },
+                                                        transition: 'all 0.2s ease-in-out',
+                                                        '&:hover': {
+                                                            transform: 'scale(1.05)',
+                                                            boxShadow: theme.shadows[3],
+                                                        },
+                                                    }}
+                                                />
+                                            </Tooltip>
                                         ))}
                                     </Box>
                                 </Box>
@@ -248,25 +365,6 @@ const ResumeResult: React.FC<ResumeResultProps> = ({ analysis, onReset }) => {
                     })}
                 </Box>
             </Paper>
-
-            <Button
-                variant="contained"
-                startIcon={<RestartAltIcon />}
-                onClick={onReset}
-                fullWidth
-                sx={{ 
-                    mt: 3,
-                    height: 48,
-                    borderRadius: '24px',
-                    background: `linear-gradient(45deg, ${theme.palette.primary.main} 30%, ${theme.palette.secondary.main} 90%)`,
-                    transition: 'all 0.2s ease-in-out',
-                    '&:hover': {
-                        transform: 'scale(1.02)',
-                    }
-                }}
-            >
-                分析新简历
-            </Button>
         </Container>
     );
 };

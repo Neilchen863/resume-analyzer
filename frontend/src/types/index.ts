@@ -3,6 +3,7 @@ export interface ResumeTag {
     name: string;
     type: 'SKILL' | 'INTEREST' | 'POSITION' | 'FIELD' | 'MOTTO';
     confidence: number;
+    score?: number; // Score out of 10
 }
 
 export interface PersonalInfo {
