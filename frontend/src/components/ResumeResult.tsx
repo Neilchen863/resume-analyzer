@@ -102,8 +102,8 @@ const exportToJson = (analysis: ResumeAnalysis) => {
 
 const exportToPdf = async (analysis: ResumeAnalysis) => {
     try {
-        const { jsPDF } = await import('jspdf');
-        const doc = new jsPDF();
+        const jsPDF = await import('jspdf');
+        const doc = new jsPDF.default();
         
         // Set font to support Chinese characters
         doc.setFont('helvetica');
