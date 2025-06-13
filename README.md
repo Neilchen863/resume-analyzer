@@ -230,6 +230,6 @@ spring.servlet.multipart.max-request-size=10MB
 4. 推送到分支 (`git push origin feature/AmazingFeature`)
 5. 创建 Pull Request
 
-## 许可证
+## 版权声明
 
-[MIT License](LICENSE) 
+Copyright © 2024 Resume Analyzer. 保留所有权利。
