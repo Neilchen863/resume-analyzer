@@ -213,25 +213,6 @@ const ResumeResult: React.FC<ResumeResultProps> = ({ analysis, onReset }) => {
 
     return (
         <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
-                <Button
-                    variant="contained"
-                    startIcon={<RestartAltIcon />}
-                    onClick={onReset}
-                    sx={{
-                        background: `linear-gradient(45deg, ${theme.palette.primary.main} 30%, ${theme.palette.secondary.main} 90%)`,
-                        color: 'white',
-                        '&:hover': {
-                            background: `linear-gradient(45deg, ${theme.palette.primary.dark} 30%, ${theme.palette.secondary.dark} 90%)`,
-                        },
-                        px: 3,
-                        py: 1,
-                    }}
-                >
-                    分析新简历
-                </Button>
-            </Box>
-
             <Paper elevation={3} sx={{ overflow: 'hidden' }}>
                 {/* Header Section with Gradient Background */}
                 <Box
@@ -388,6 +369,34 @@ const ResumeResult: React.FC<ResumeResultProps> = ({ analysis, onReset }) => {
                     })}
                 </Box>
             </Paper>
+
+            {/* 在最下方添加"分析新简历"按钮 */}
+            <Box sx={{ 
+                display: 'flex', 
+                justifyContent: 'center', 
+                mt: 4
+            }}>
+                <Button
+                    variant="contained"
+                    startIcon={<RestartAltIcon />}
+                    onClick={onReset}
+                    sx={{
+                        background: `linear-gradient(45deg, ${theme.palette.primary.main} 30%, ${theme.palette.secondary.main} 90%)`,
+                        color: 'white',
+                        '&:hover': {
+                            background: `linear-gradient(45deg, ${theme.palette.primary.dark} 30%, ${theme.palette.secondary.dark} 90%)`,
+                            transform: 'translateY(-2px)',
+                            boxShadow: theme.shadows[4],
+                        },
+                        px: 4,
+                        py: 1.5,
+                        fontSize: '1.1rem',
+                        transition: 'all 0.3s ease',
+                    }}
+                >
+                    分析新简历
+                </Button>
+            </Box>
         </Container>
     );
 };
