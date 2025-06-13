@@ -8,6 +8,7 @@ public class ResumeTag {
     private String name;
     private TagType type;
     private double confidence;
+    private Integer score; // Score out of 10
 
     public enum TagType {
         SKILL,

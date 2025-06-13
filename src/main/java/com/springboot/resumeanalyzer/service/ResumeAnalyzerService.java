@@ -72,7 +72,8 @@ public class ResumeAnalyzerService {
               "id": "使用uuid v4格式",
               "name": "标签名称",
               "type": "SKILL",
-              "confidence": 0.95
+              "confidence": 0.95,
+              "score": 8
             }
           ]
         }
@@ -81,19 +82,25 @@ public class ResumeAnalyzerService {
         1. 所有字段必须返回，如果找不到信息则返回null
         2. confidence值范围为0-1，根据信息的确定性程度评分
         3. type必须是以下值之一：SKILL, INTEREST, POSITION, FIELD, MOTTO
-        4. 每个标签都必须包含id、name、type和confidence字段
+        4. 每个标签都必须包含id、name、type、confidence和score字段
         5. 严格按照这个JSON格式返回，不要添加其他内容
         6. 确保生成的是有效的JSON格式
         7. id必须是有效的UUID v4格式
-        8. 标签类型说明：
+        8. score字段是1-10的整数，表示对该项能力或特质的评分：
+           - SKILL类型：根据技能熟练度、项目经验和实践深度评分
+           - INTEREST类型：根据兴趣深度、持续时间和相关成果评分
+           - POSITION类型：根据岗位匹配度和发展潜力评分
+           - FIELD类型：根据领域专业度和研究深度评分
+           - MOTTO类型：根据特质显著程度和价值观强度评分
+        9. 标签类型说明：
            - SKILL: 技能和工具，包括硬技能、软技能、潜在技能和跨领域技能
            - INTEREST: 兴趣爱好，包括专业相关兴趣和个人发展方向
            - POSITION: 适合的职位，包括当前职位和未来发展方向
            - FIELD: 专业领域，包括主要领域和潜在发展领域
            - MOTTO: 个性标签，包括性格特征、工作风格和价值观
-        9. 直接返回JSON，不要使用任何Markdown格式（如```json）
-        10. 不要添加任何额外的说明或注释
-        11. 在生成标签时，要充分发挥创造性思维：
+        10. 直接返回JSON，不要使用任何Markdown格式（如```json）
+        11. 不要添加任何额外的说明或注释
+        12. 在生成标签时，要充分发挥创造性思维：
             - 深入分析简历中的细节信息
             - 挖掘潜在的能力和特质
             - 考虑跨领域的发展可能
