@@ -103,60 +103,64 @@ const exportToJson = (analysis: ResumeAnalysis) => {
 const exportToPdf = async (analysis: ResumeAnalysis) => {
     try {
         const jsPDF = await import('jspdf');
-        const doc = new jsPDF.default();
+        const html2canvas = await import('html2canvas');
         
-        // Set font to support Chinese characters
-        doc.setFont('helvetica');
+        // Create a temporary div for rendering
+        const element = document.createElement('div');
+        element.style.padding = '40px';
+        element.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
         
-        // Add title
-        doc.setFontSize(20);
-        doc.text('简历分析报告', 20, 20);
-        
-        // Add personal info
-        doc.setFontSize(16);
-        doc.text('个人信息', 20, 40);
-        doc.setFontSize(12);
-        doc.text(`姓名: ${analysis.personalInfo.name || '未知'}`, 30, 50);
-        if (analysis.personalInfo.email) {
-            doc.text(`邮箱: ${analysis.personalInfo.email}`, 30, 60);
-        }
-        if (analysis.personalInfo.phone) {
-            doc.text(`电话: ${analysis.personalInfo.phone}`, 30, 70);
-        }
-        if (analysis.personalInfo.location) {
-            doc.text(`地点: ${analysis.personalInfo.location}`, 30, 80);
-        }
-        
-        // Add tags by type
-        let yPos = 100;
-        const tagTypes: ResumeTag['type'][] = ['MOTTO', 'POSITION', 'FIELD', 'SKILL', 'INTEREST'];
-        
-        for (const type of tagTypes) {
-            const typeTags = analysis.tags.filter(tag => tag.type === type);
-            if (typeTags.length === 0) continue;
+        // Add content
+        element.innerHTML = `
+            <h1 style="font-size: 24px; margin-bottom: 30px;">简历分析报告</h1>
             
-            doc.setFontSize(16);
-            doc.text(getTagTypeName(type), 20, yPos);
-            yPos += 10;
+            <h2 style="font-size: 20px; margin-bottom: 20px;">个人信息</h2>
+            <div style="margin-left: 20px; margin-bottom: 30px;">
+                <p>姓名: ${analysis.personalInfo.name || '未知'}</p>
+                ${analysis.personalInfo.email ? `<p>邮箱: ${analysis.personalInfo.email}</p>` : ''}
+                ${analysis.personalInfo.phone ? `<p>电话: ${analysis.personalInfo.phone}</p>` : ''}
+                ${analysis.personalInfo.location ? `<p>地点: ${analysis.personalInfo.location}</p>` : ''}
+            </div>
             
-            doc.setFontSize(12);
-            typeTags.forEach(tag => {
-                const tagText = tag.score ? `${tag.name} (${tag.score}/10)` : tag.name;
-                doc.text(`• ${tagText}`, 30, yPos);
-                yPos += 10;
-                
-                // Add new page if needed
-                if (yPos > 280) {
-                    doc.addPage();
-                    yPos = 20;
-                }
-            });
-            
-            yPos += 10;
-        }
+            ${['MOTTO', 'POSITION', 'FIELD', 'SKILL', 'INTEREST']
+                .map(type => {
+                    const typeTags = analysis.tags.filter(tag => tag.type === type);
+                    if (typeTags.length === 0) return '';
+                    
+                    return `
+                        <h2 style="font-size: 20px; margin-bottom: 20px; margin-top: 30px;">
+                            ${getTagTypeName(type as ResumeTag['type'])}
+                        </h2>
+                        <div style="margin-left: 20px;">
+                            ${typeTags.map(tag => `
+                                <p style="margin-bottom: 10px;">
+                                    • ${tag.name}${tag.score ? ` (${tag.score}/10)` : ''}
+                                </p>
+                            `).join('')}
+                        </div>
+                    `;
+                }).join('')}
+        `;
         
-        // Save the PDF
-        doc.save(`${analysis.personalInfo.name || 'resume'}_analysis.pdf`);
+        // Add to document temporarily
+        document.body.appendChild(element);
+        
+        // Convert to canvas
+        const canvas = await html2canvas.default(element);
+        
+        // Remove temporary element
+        document.body.removeChild(element);
+        
+        // Convert to PDF
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF.default({
+            orientation: 'p',
+            unit: 'px',
+            format: [canvas.width, canvas.height]
+        });
+        
+        pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+        pdf.save(`${analysis.personalInfo.name || 'resume'}_analysis.pdf`);
     } catch (error) {
         console.error('Error generating PDF:', error);
         alert('PDF生成失败，请尝试导出JSON格式');
